@@ -1,0 +1,42 @@
+# Binaries
+/cdsl
+*.exe
+*.out
+*.app
+
+# Go build artifacts
+/bin/
+/build/
+/dist/
+
+# Coverage / profiling
+coverage.out
+*.prof
+
+# Test artifacts
+*.test
+
+# Go workspace
+go.work
+go.work.sum
+
+# Environment / local configuration
+.env
+.env.*
+!.env.example
+*.hcl
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.log
