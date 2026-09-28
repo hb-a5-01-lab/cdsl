@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <arduino>
+        <port>/dev/ttyUSBX</port>
+        <baud_rate>123456</baud_rate>
+    </arduino>
+
+    <component>
+        <component_1>
+            <id>0</id>
+            <min>0</min>
+            <max>180</max>
+        </component_1>
+
+        <component_2>
+            <id>1</id>
+            <min>0</min>
+            <max>180</max>
+        </component_2>
+    </component>
+</config>

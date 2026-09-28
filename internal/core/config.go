@@ -2,35 +2,111 @@
 package core
 
 import (
+	"encoding/xml"
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/BurntSushi/toml"
 )
 
 // Config represents the CDSL configuration.
 type Config map[string]any
 
-// LoadConfig loads the config and shares reference to it
+type xmlConfig struct {
+	XMLName   xml.Name     `xml:"config"`
+	Arduino   xmlArduino   `xml:"arduino"`
+	Component xmlComponent `xml:"component"`
+}
+
+type xmlArduino struct {
+	Port     string `xml:"port"`
+	BaudRate int    `xml:"baud_rate"`
+}
+
+type xmlComponent struct {
+	Base     xmlComponentConfig `xml:"base"`
+	Shoulder xmlComponentConfig `xml:"shoulder"`
+	Elbow    xmlComponentConfig `xml:"elbow"`
+	Wrist    xmlComponentConfig `xml:"wrist"`
+	Hand     xmlComponentConfig `xml:"hand"`
+	Claw     xmlComponentConfig `xml:"claw"`
+}
+
+type xmlComponentConfig struct {
+	ID      uint8 `xml:"id"`
+	Min     int   `xml:"min"`
+	Max     int   `xml:"max"`
+	Default int   `xml:"default"`
+}
+
+// LoadConfig loads the config and shares reference to it.
 func LoadConfig() (*Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get home directory: %w", err)
 	}
 
-	configFile := filepath.Join(home, ".config", "cdsl", "config.toml")
+	configFile := filepath.Join(home, ".config", "cdsl", "config.xml")
 
-	var config Config
+	data, err := os.ReadFile(configFile)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config: %w", err)
+	}
 
-	if _, err := toml.DecodeFile(configFile, &config); err != nil {
+	var xmlConfig xmlConfig
+
+	if err := xml.Unmarshal(data, &xmlConfig); err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
+	}
+
+	config := Config{
+		"arduino": map[string]any{
+			"port":      xmlConfig.Arduino.Port,
+			"baud_rate": int64(xmlConfig.Arduino.BaudRate),
+		},
+		"component": map[string]any{
+			"base": map[string]any{
+				"id":      int64(xmlConfig.Component.Base.ID),
+				"min":     int64(xmlConfig.Component.Base.Min),
+				"max":     int64(xmlConfig.Component.Base.Max),
+				"default": int64(xmlConfig.Component.Base.Default),
+			},
+			"shoulder": map[string]any{
+				"id":      int64(xmlConfig.Component.Shoulder.ID),
+				"min":     int64(xmlConfig.Component.Shoulder.Min),
+				"max":     int64(xmlConfig.Component.Shoulder.Max),
+				"default": int64(xmlConfig.Component.Shoulder.Default),
+			},
+			"elbow": map[string]any{
+				"id":      int64(xmlConfig.Component.Elbow.ID),
+				"min":     int64(xmlConfig.Component.Elbow.Min),
+				"max":     int64(xmlConfig.Component.Elbow.Max),
+				"default": int64(xmlConfig.Component.Elbow.Default),
+			},
+			"wrist": map[string]any{
+				"id":      int64(xmlConfig.Component.Wrist.ID),
+				"min":     int64(xmlConfig.Component.Wrist.Min),
+				"max":     int64(xmlConfig.Component.Wrist.Max),
+				"default": int64(xmlConfig.Component.Wrist.Default),
+			},
+			"hand": map[string]any{
+				"id":      int64(xmlConfig.Component.Hand.ID),
+				"min":     int64(xmlConfig.Component.Hand.Min),
+				"max":     int64(xmlConfig.Component.Hand.Max),
+				"default": int64(xmlConfig.Component.Hand.Default),
+			},
+			"claw": map[string]any{
+				"id":      int64(xmlConfig.Component.Claw.ID),
+				"min":     int64(xmlConfig.Component.Claw.Min),
+				"max":     int64(xmlConfig.Component.Claw.Max),
+				"default": int64(xmlConfig.Component.Claw.Default),
+			},
+		},
 	}
 
 	return &config, nil
 }
 
-// ComponentExists checks whether the component name passed by user exists or not
+// ComponentExists checks whether the component name passed by user exists or not.
 func ComponentExists(config *Config, componentName string) (bool, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -42,7 +118,7 @@ func ComponentExists(config *Config, componentName string) (bool, error) {
 	return exists, nil
 }
 
-// ComponentID looks up for the component and returns the configured id
+// ComponentID looks up for the component and returns the configured id.
 func ComponentID(config *Config, componentName string) (uint8, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -66,7 +142,7 @@ func ComponentID(config *Config, componentName string) (uint8, error) {
 	return uint8(id), nil
 }
 
-// ValueWithinLimits checks whether the provided float value falls within the configured limits
+// ValueWithinLimits checks whether the provided float value falls within the configured limits.
 func ValueWithinLimits(config *Config, componentName string, value float32) (bool, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -88,7 +164,7 @@ func ValueWithinLimits(config *Config, componentName string, value float32) (boo
 	return value >= float32(min) && value <= float32(max), nil
 }
 
-// ComponentDefault returns the default value of the component
+// ComponentDefault returns the default value of the component.
 func ComponentDefault(config *Config, componentName string) (float32, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -108,7 +184,7 @@ func ComponentDefault(config *Config, componentName string) (float32, error) {
 	return float32(defaultValue), nil
 }
 
-// ArduinoPort returns the port of the connected arduino
+// ArduinoPort returns the port of the connected Arduino.
 func ArduinoPort(config *Config) (string, error) {
 	arduino, ok := (*config)["arduino"].(map[string]any)
 	if !ok {
@@ -123,7 +199,7 @@ func ArduinoPort(config *Config) (string, error) {
 	return port, nil
 }
 
-// ArduinoBaudRate returns the configured baud rate
+// ArduinoBaudRate returns the configured baud rate.
 func ArduinoBaudRate(config *Config) (int, error) {
 	arduino, ok := (*config)["arduino"].(map[string]any)
 	if !ok {
