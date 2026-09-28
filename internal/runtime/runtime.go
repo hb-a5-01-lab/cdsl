@@ -23,6 +23,7 @@ const (
 	move
 	wait
 	printc
+	reset
 	invalid
 )
 
@@ -32,6 +33,7 @@ var opcodeMap = map[string]opcode{
 	"move":   move,
 	"wait":   wait,
 	"printc": printc,
+	"reset":  reset,
 }
 
 func processInstruction(config *core.Config, instruction core.Instruction) {
@@ -63,6 +65,9 @@ func processInstruction(config *core.Config, instruction core.Instruction) {
 
 	case printc:
 		instructions.ProcessPrintc(config)
+
+	case reset:
+		instructions.ProcessReset(config, instruction)
 
 	default:
 		core.Error("Invalid action: "+instruction[0], instruction)

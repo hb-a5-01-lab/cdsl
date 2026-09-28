@@ -10,10 +10,11 @@ import (
 )
 
 type componentInfo struct {
-	name string
-	id   int64
-	min  int64
-	max  int64
+	name         string
+	id           int64
+	min          int64
+	max          int64
+	defaultValue int64
 }
 
 // ProcessPrintc prints the configuration in a tabular format
@@ -50,18 +51,20 @@ func ProcessPrintc(config *core.Config) {
 		}
 
 		id, idOK := component["id"].(int64)
-		min, minOK := component["min"].(int64)
-		max, maxOK := component["max"].(int64)
+		minValue, minOK := component["min"].(int64)
+		maxValue, maxOK := component["max"].(int64)
+		defaultValue, defaultOK := component["default"].(int64)
 
-		if !idOK || !minOK || !maxOK {
+		if !idOK || !minOK || !maxOK || !defaultOK {
 			continue
 		}
 
 		componentList = append(componentList, componentInfo{
-			name: name,
-			id:   id,
-			min:  min,
-			max:  max,
+			name:         name,
+			id:           id,
+			min:          minValue,
+			max:          maxValue,
+			defaultValue: defaultValue,
 		})
 	}
 
@@ -72,40 +75,48 @@ func ProcessPrintc(config *core.Config) {
 	idWidth := len("c_id")
 	nameWidth := len("c_name")
 	rangeWidth := len("c_range")
+	defaultWidth := len("default")
 
 	for _, component := range componentList {
-		idWidth = max(idWidth, len(strconv.FormatInt(component.id, 10)))
-
 		rangeValue := fmt.Sprintf("%d-%d", component.min, component.max)
 
+		idWidth = max(idWidth, len(strconv.FormatInt(component.id, 10)))
 		nameWidth = max(nameWidth, len(component.name))
 		rangeWidth = max(rangeWidth, len(rangeValue))
+		defaultWidth = max(
+			defaultWidth,
+			len(strconv.FormatInt(component.defaultValue, 10)),
+		)
 	}
 
 	fmt.Printf(
-		"%-*s | %-*s | %-*s\n",
+		"%-*s | %-*s | %-*s | %-*s\n",
 		idWidth,
 		"c_id",
 		nameWidth,
 		"c_name",
 		rangeWidth,
 		"c_range",
+		defaultWidth,
+		"default",
 	)
 
-	tableWidth := idWidth + 3 + nameWidth + 3 + rangeWidth
+	tableWidth := idWidth + 3 + nameWidth + 3 + rangeWidth + 3 + defaultWidth
 	fmt.Println(strings.Repeat("-", tableWidth))
 
 	for _, component := range componentList {
 		rangeValue := fmt.Sprintf("%d-%d", component.min, component.max)
 
 		fmt.Printf(
-			"%-*d | %-*s | %-*s\n",
+			"%-*d | %-*s | %-*s | %-*d\n",
 			idWidth,
 			component.id,
 			nameWidth,
 			component.name,
 			rangeWidth,
 			rangeValue,
+			defaultWidth,
+			component.defaultValue,
 		)
 	}
 }

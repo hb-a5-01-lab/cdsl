@@ -9,7 +9,8 @@ import (
 	"github.com/znwng/cdsl/internal/hardware"
 )
 
-func executeMove(
+// ExecuteMove executes move
+func ExecuteMove(
 	config *core.Config,
 	instruction core.Instruction,
 	componentLabel string,
@@ -92,7 +93,7 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 			return
 		}
 
-		executeMove(
+		ExecuteMove(
 			config,
 			instruction,
 			componentLabel,
@@ -116,7 +117,7 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 
 		result := core.GetVariable(variableName)
 
-		executeMove(
+		ExecuteMove(
 			config,
 			instruction,
 			componentLabel,
@@ -134,7 +135,7 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 		return
 	}
 
-	executeMove(
+	ExecuteMove(
 		config,
 		instruction,
 		componentLabel,

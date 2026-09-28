@@ -88,6 +88,26 @@ func ValueWithinLimits(config *Config, componentName string, value float32) (boo
 	return value >= float32(min) && value <= float32(max), nil
 }
 
+// ComponentDefault returns the default value of the component
+func ComponentDefault(config *Config, componentName string) (float32, error) {
+	components, ok := (*config)["component"].(map[string]any)
+	if !ok {
+		return 0, fmt.Errorf("no components configured")
+	}
+
+	component, ok := components[componentName].(map[string]any)
+	if !ok {
+		return 0, fmt.Errorf("component not configured: %s", componentName)
+	}
+
+	defaultValue, ok := component["default"].(int64)
+	if !ok {
+		return 0, fmt.Errorf("component default is not configured: %s", componentName)
+	}
+
+	return float32(defaultValue), nil
+}
+
 // ArduinoPort returns the port of the connected arduino
 func ArduinoPort(config *Config) (string, error) {
 	arduino, ok := (*config)["arduino"].(map[string]any)
