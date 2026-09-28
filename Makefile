@@ -2,8 +2,8 @@
 
 INSTALL_DIR := $(HOME)/.local/bin
 CONFIG_DIR := $(HOME)/.config/cdsl
-CONFIG_FILE := $(CONFIG_DIR)/config.toml
-EXAMPLE_CONFIG := example-config.toml
+CONFIG_FILE := $(CONFIG_DIR)/config.xml
+EXAMPLE_CONFIG := example-config.xml
 BINARY := cdsl
 
 all: $(BINARY) config

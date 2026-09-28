@@ -374,17 +374,19 @@ Division by zero and references to undefined variables result in an interpreter 
 CDSL components are configured through:
 
 ```text
-~/.config/cdsl/config.toml
+~/.config/cdsl/config.xml
 ```
 
 Each component has an allowed value range.
 
 For example:
 
-```toml
-[component.BASE]
-min = 0
-max = 180
+```xml
+<component_2>
+  <id>1</id>
+  <min>0</min>
+  <max>180</max>
+</component_2>
 ```
 
 A `move` instruction validates the requested value against the configured component limits before executing it.
