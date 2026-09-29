@@ -2,7 +2,10 @@ package core
 
 import "strings"
 
-// Tokenize takes the instruction as string and returns the Instruction type
+// Tokenize splits an instruction line into individual tokens.
+//
+// Tokenization stops when a comment marker ("//") is encountered. The comment
+// and any tokens following it are excluded from the resulting instruction.
 func Tokenize(line string) Instruction {
 	var tokens Instruction
 

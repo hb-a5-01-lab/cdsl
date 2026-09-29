@@ -20,5 +20,6 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Start the REPL
 	runtime.RunInteractiveMode()
 }

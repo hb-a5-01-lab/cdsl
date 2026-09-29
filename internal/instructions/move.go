@@ -1,4 +1,4 @@
-// Package instructions processes CDSL instructions
+// Package instructions defines all instructions
 package instructions
 
 import (
@@ -9,7 +9,14 @@ import (
 	"github.com/znwng/cdsl/internal/hardware"
 )
 
-// ExecuteMove executes move
+// ========================================
+// Move Execution
+// ========================================
+
+// ExecuteMove validates and executes a component movement command.
+//
+// The requested value is checked against the component's configured limits
+// before the command is sent to the Arduino.
 func ExecuteMove(
 	config *core.Config,
 	instruction core.Instruction,
@@ -48,7 +55,14 @@ func ExecuteMove(
 	return true
 }
 
-// ProcessMove processes a CDSL move instruction
+// ========================================
+// Move Processing
+// ========================================
+
+// ProcessMove processes a CDSL MOVE instruction.
+//
+// The movement value may be a numeric value, a variable reference, or an
+// arithmetic expression enclosed in #[...] syntax.
 func ProcessMove(config *core.Config, instruction core.Instruction) {
 	if len(instruction) != 3 {
 		core.Error(

@@ -8,15 +8,28 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
+// ========================================
+// Wait Execution
+// ========================================
+
+// waitFunction pauses execution for the specified duration in milliseconds.
+//
+// The delay is currently handled by the host system and may be moved to the
+// hardware layer in the future.
 func waitFunction(delay int) {
-	// Placeholder code.
-	// Actual delay implementation must eventually be handled by hardware.
 	fmt.Printf("Waiting for %d milliseconds\n\n", delay)
 
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 }
 
-// ProcessWait handles wait commands
+// ========================================
+// Wait Processing
+// ========================================
+
+// ProcessWait processes a CDSL WAIT instruction.
+//
+// The duration may be an integer value, a variable reference, or an arithmetic
+// expression enclosed in #[...] syntax. Negative durations are rejected.
 func ProcessWait(instruction core.Instruction) {
 	if len(instruction) != 2 {
 		core.Error(
@@ -30,7 +43,6 @@ func ProcessWait(instruction core.Instruction) {
 
 	var delay int
 
-	// Expression
 	switch {
 	case strings.HasPrefix(value, "#["):
 		if len(value) < 3 || !strings.HasSuffix(value, "]") {
@@ -68,7 +80,6 @@ func ProcessWait(instruction core.Instruction) {
 		delay = result
 	}
 
-	// Validate delay
 	if delay < 0 {
 		core.Error(
 			fmt.Sprintf("Delay cannot be negative: %d", delay),

@@ -7,7 +7,11 @@ import (
 	"github.com/znwng/cdsl/internal/ui"
 )
 
-// DisplayInstruction prints the instruction
+// ========================================
+// Instruction Output
+// ========================================
+
+// DisplayInstruction prints an instruction and its tokens to standard output.
 func DisplayInstruction(instruction Instruction) {
 	for _, token := range instruction {
 		fmt.Printf("%s ", token)
@@ -16,7 +20,14 @@ func DisplayInstruction(instruction Instruction) {
 	fmt.Println()
 }
 
-// Error is used to print a formatted colored error
+// ========================================
+// Error Output
+// ========================================
+
+// Error prints a formatted error message to standard error.
+//
+// The instruction that caused the error is included in the message to provide
+// context for the failure.
 func Error(message string, instruction Instruction) {
 	fmt.Fprintf(os.Stderr, "%s%s: %s%s\n", ui.Red, instruction, message, ui.Reset)
 }

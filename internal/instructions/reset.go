@@ -8,7 +8,15 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
-// ProcessReset gets the default values of all components and performs move function using those values
+// ========================================
+// Reset Processing
+// ========================================
+
+// ProcessReset moves all configured components to their default positions.
+//
+// Components are processed in ascending order of their configured IDs. A
+// two-second delay is inserted between each movement to allow the hardware
+// to settle before the next command is sent.
 func ProcessReset(config *core.Config, instruction core.Instruction) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {

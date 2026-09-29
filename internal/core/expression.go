@@ -6,12 +6,18 @@ import (
 	"unicode"
 )
 
+// ========================================
+// Expression Parsing
+// ========================================
+
+// skipWhitespace advances pos past all whitespace characters in expression.
 func skipWhitespace(expression string, pos *int) {
 	for *pos < len(expression) && unicode.IsSpace(rune(expression[*pos])) {
 		*pos++
 	}
 }
 
+// parseParenthesized parses an expression enclosed in parentheses.
 func parseParenthesized(expression string, pos *int) (float32, error) {
 	*pos++ // Skip '('
 
@@ -31,6 +37,7 @@ func parseParenthesized(expression string, pos *int) (float32, error) {
 	return value, nil
 }
 
+// parseVariable parses a variable reference beginning with '$'.
 func parseVariable(expression string, pos *int) (float32, error) {
 	*pos++ // Skip '$'
 
@@ -59,6 +66,7 @@ func parseVariable(expression string, pos *int) (float32, error) {
 	return GetVariable(name), nil
 }
 
+// parseNumber parses a floating-point numeric literal.
 func parseNumber(expression string, pos *int) (float32, error) {
 	start := *pos
 
@@ -78,6 +86,8 @@ func parseNumber(expression string, pos *int) (float32, error) {
 	return float32(value), nil
 }
 
+// parsePrimary parses a primary expression such as a number, variable, or
+// parenthesized expression.
 func parsePrimary(expression string, pos *int) (float32, error) {
 	skipWhitespace(expression, pos)
 
@@ -100,6 +110,7 @@ func parsePrimary(expression string, pos *int) (float32, error) {
 	return 0, fmt.Errorf("unexpected character: %c", expression[*pos])
 }
 
+// parseFactor parses a factor and handles unary plus and minus operators.
 func parseFactor(expression string, pos *int) (float32, error) {
 	skipWhitespace(expression, pos)
 
@@ -123,6 +134,7 @@ func parseFactor(expression string, pos *int) (float32, error) {
 	return parsePrimary(expression, pos)
 }
 
+// parseTerm parses multiplication and division operations.
 func parseTerm(expression string, pos *int) (float32, error) {
 	value, err := parseFactor(expression, pos)
 	if err != nil {
@@ -163,6 +175,7 @@ func parseTerm(expression string, pos *int) (float32, error) {
 	return value, nil
 }
 
+// parseExpression parses addition and subtraction operations.
 func parseExpression(expression string, pos *int) (float32, error) {
 	value, err := parseTerm(expression, pos)
 	if err != nil {
@@ -199,7 +212,15 @@ func parseExpression(expression string, pos *int) (float32, error) {
 	return value, nil
 }
 
-// EvaluateExpression evaluates the expression
+// ========================================
+// Expression Evaluation
+// ========================================
+
+// EvaluateExpression evaluates an arithmetic expression and returns its
+// resulting value.
+//
+// The expression supports numeric literals, variables, parentheses, unary
+// operators, and the standard arithmetic operators +, -, *, and /.
 func EvaluateExpression(expression string) (float32, error) {
 	pos := 0
 

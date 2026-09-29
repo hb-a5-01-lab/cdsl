@@ -8,20 +8,34 @@ import (
 	"path/filepath"
 )
 
+// ========================================
+// Configuration
+// ========================================
+
 // Config represents the CDSL configuration.
+//
+// The configuration is stored as a generic map to keep the rest of the
+// application independent of the underlying configuration file format.
 type Config map[string]any
 
+// ========================================
+// XML Configuration Types
+// ========================================
+
+// xmlConfig represents the structure of the CDSL XML configuration file.
 type xmlConfig struct {
 	XMLName   xml.Name     `xml:"config"`
 	Arduino   xmlArduino   `xml:"arduino"`
 	Component xmlComponent `xml:"component"`
 }
 
+// xmlArduino contains the Arduino serial connection settings.
 type xmlArduino struct {
 	Port     string `xml:"port"`
 	BaudRate int    `xml:"baud_rate"`
 }
 
+// xmlComponent contains the configuration for all supported robot components.
 type xmlComponent struct {
 	Base     xmlComponentConfig `xml:"base"`
 	Shoulder xmlComponentConfig `xml:"shoulder"`
@@ -31,6 +45,8 @@ type xmlComponent struct {
 	Claw     xmlComponentConfig `xml:"claw"`
 }
 
+// xmlComponentConfig contains the hardware configuration for a single
+// robot component.
 type xmlComponentConfig struct {
 	ID      uint8 `xml:"id"`
 	Min     int   `xml:"min"`
@@ -38,7 +54,19 @@ type xmlComponentConfig struct {
 	Default int   `xml:"default"`
 }
 
-// LoadConfig loads the config and shares reference to it.
+// ========================================
+// Configuration Loading
+// ========================================
+
+// LoadConfig loads the CDSL configuration from the user's configuration
+// directory.
+//
+// The configuration file is expected at:
+//
+//	~/.config/cdsl/config.xml
+//
+// XML parsing is isolated to this function so the rest of the application
+// operates on the generic Config representation.
 func LoadConfig() (*Config, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
@@ -58,6 +86,8 @@ func LoadConfig() (*Config, error) {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
 	}
 
+	// Convert the XML representation into the generic configuration structure
+	// used by the rest of the application.
 	config := Config{
 		"arduino": map[string]any{
 			"port":      xmlConfig.Arduino.Port,
@@ -106,7 +136,12 @@ func LoadConfig() (*Config, error) {
 	return &config, nil
 }
 
-// ComponentExists checks whether the component name passed by user exists or not.
+// ========================================
+// Component Operations
+// ========================================
+
+// ComponentExists reports whether the specified component exists in the
+// configuration.
 func ComponentExists(config *Config, componentName string) (bool, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -118,7 +153,9 @@ func ComponentExists(config *Config, componentName string) (bool, error) {
 	return exists, nil
 }
 
-// ComponentID looks up for the component and returns the configured id.
+// ComponentID returns the configured ID of the specified component.
+//
+// The ID must be within the range of an unsigned 8-bit integer.
 func ComponentID(config *Config, componentName string) (uint8, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -142,7 +179,10 @@ func ComponentID(config *Config, componentName string) (uint8, error) {
 	return uint8(id), nil
 }
 
-// ValueWithinLimits checks whether the provided float value falls within the configured limits.
+// ValueWithinLimits reports whether value falls within the configured
+// minimum and maximum values for the specified component.
+//
+// The configured limits are inclusive.
 func ValueWithinLimits(config *Config, componentName string, value float32) (bool, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -164,7 +204,8 @@ func ValueWithinLimits(config *Config, componentName string, value float32) (boo
 	return value >= float32(minValue) && value <= float32(maxValue), nil
 }
 
-// ComponentDefault returns the default value of the component.
+// ComponentDefault returns the configured default value for the specified
+// component.
 func ComponentDefault(config *Config, componentName string) (float32, error) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
@@ -184,7 +225,11 @@ func ComponentDefault(config *Config, componentName string) (float32, error) {
 	return float32(defaultValue), nil
 }
 
-// ArduinoPort returns the port of the connected Arduino.
+// ========================================
+// Arduino Configuration
+// ========================================
+
+// ArduinoPort returns the serial port configured for the Arduino.
 func ArduinoPort(config *Config) (string, error) {
 	arduino, ok := (*config)["arduino"].(map[string]any)
 	if !ok {
@@ -199,7 +244,7 @@ func ArduinoPort(config *Config) (string, error) {
 	return port, nil
 }
 
-// ArduinoBaudRate returns the configured baud rate.
+// ArduinoBaudRate returns the configured baud rate for the Arduino.
 func ArduinoBaudRate(config *Config) (int, error) {
 	arduino, ok := (*config)["arduino"].(map[string]any)
 	if !ok {

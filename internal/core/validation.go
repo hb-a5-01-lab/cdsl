@@ -6,7 +6,14 @@ import (
 	"unicode"
 )
 
-// IsValidFloatValue parses a string as a 32-bit floating-point value
+// ========================================
+// Value Validation
+// ========================================
+
+// IsValidFloatValue parses a string as a 32-bit floating-point value.
+//
+// An error is returned when the string is not a valid floating-point value or
+// when the value cannot be represented as a float32.
 func IsValidFloatValue(stringValue string) (float32, error) {
 	value, err := strconv.ParseFloat(stringValue, 32)
 	if err != nil {
@@ -20,7 +27,10 @@ func IsValidFloatValue(stringValue string) (float32, error) {
 	return float32(value), nil
 }
 
-// IsValidIntValue parses a string as an integer
+// IsValidIntValue parses a string as an integer.
+//
+// An error is returned when the string is not a valid integer or when the
+// value cannot be represented as an int.
 func IsValidIntValue(stringValue string) (int, error) {
 	value, err := strconv.Atoi(stringValue)
 	if err != nil {
@@ -34,7 +44,14 @@ func IsValidIntValue(stringValue string) (int, error) {
 	return value, nil
 }
 
-// IsValidVariableName checks whether a string is a valid CDSL variable name
+// ========================================
+// Variable Validation
+// ========================================
+
+// IsValidVariableName reports whether name is a valid CDSL variable name.
+//
+// A variable name must begin with a letter or underscore and may contain
+// letters, digits, and underscores thereafter.
 func IsValidVariableName(name string) bool {
 	if name == "" {
 		return false

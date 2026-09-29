@@ -7,7 +7,14 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
-// ProcessPrint prints the arguments passed
+// ========================================
+// Print Processing
+// ========================================
+
+// ProcessPrint processes a CDSL PRINT instruction.
+//
+// The argument may be a variable reference or an arithmetic expression
+// enclosed in #[...] syntax.
 func ProcessPrint(instruction core.Instruction) {
 	if len(instruction) != 2 {
 		core.Error(

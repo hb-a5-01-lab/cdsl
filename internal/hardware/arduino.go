@@ -1,4 +1,4 @@
-// Package hardware provides hardware communication for CDSL
+// Package hardware deals with all hardware communication
 package hardware
 
 import (
@@ -8,9 +8,12 @@ import (
 	"os"
 
 	"github.com/znwng/cdsl/internal/core"
-
 	"golang.org/x/sys/unix"
 )
+
+// ========================================
+// Serial Communication
+// ========================================
 
 const (
 	startByte = 0xAA
@@ -29,6 +32,8 @@ const (
 
 const packetSize = 1 + 2 + 1 + 4 + 2
 
+// getBaudRate converts a configured baud rate into its corresponding
+// Unix terminal baud-rate constant.
 func getBaudRate(baudRate int) (uint32, error) {
 	switch baudRate {
 	case baud9600:
@@ -46,6 +51,7 @@ func getBaudRate(baudRate int) (uint32, error) {
 	}
 }
 
+// crc16 calculates the CRC-16 checksum for the supplied packet data.
 func crc16(data []byte) uint16 {
 	crc := uint16(crc16InitialValue)
 
@@ -64,7 +70,15 @@ func crc16(data []byte) uint16 {
 	return crc
 }
 
-// SendCommand sends a component command to the Arduino over the configured serial port
+// ========================================
+// Command Transmission
+// ========================================
+
+// SendCommand sends a component command to the Arduino over the configured
+// serial port.
+//
+// The command contains the component ID, target value, packet ID, and a
+// CRC-16 checksum for packet integrity.
 func SendCommand(config *core.Config, componentLabel string, value float32) error {
 	componentID, err := core.ComponentID(config, componentLabel)
 	if err != nil {
@@ -187,5 +201,9 @@ func SendCommand(config *core.Config, componentLabel string, value float32) erro
 
 	return nil
 }
+
+// ========================================
+// Packet State
+// ========================================
 
 var staticPacketID uint16

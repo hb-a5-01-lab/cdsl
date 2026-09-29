@@ -9,6 +9,11 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
+// ========================================
+// Component Information
+// ========================================
+
+// componentInfo contains the configuration details for a robot component.
 type componentInfo struct {
 	name         string
 	id           int64
@@ -17,7 +22,13 @@ type componentInfo struct {
 	defaultValue int64
 }
 
-// ProcessPrintc prints the configuration in a tabular format
+// ========================================
+// Configuration Output
+// ========================================
+
+// ProcessPrintc prints the CDSL configuration in a tabular format.
+//
+// Components are sorted by their configured ID before being displayed.
 func ProcessPrintc(config *core.Config) {
 	port, err := core.ArduinoPort(config)
 	if err != nil {

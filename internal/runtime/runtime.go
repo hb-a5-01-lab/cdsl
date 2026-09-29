@@ -1,4 +1,3 @@
-// Package runtime handles the REPL
 package runtime
 
 import (
@@ -14,6 +13,10 @@ import (
 
 	"github.com/chzyer/readline"
 )
+
+// ========================================
+// Instruction Processing
+// ========================================
 
 type opcode int
 
@@ -76,7 +79,14 @@ func processInstruction(config *core.Config, instruction core.Instruction) {
 	fmt.Println()
 }
 
-// RunInteractiveMode starts the REPL
+// ========================================
+// Interactive Mode
+// ========================================
+
+// RunInteractiveMode starts the CDSL interactive REPL.
+//
+// The REPL loads the user's configuration and maintains command history in
+// ~/.cdsl_history.
 func RunInteractiveMode() {
 	config, err := core.LoadConfig()
 	if err != nil {

@@ -7,7 +7,14 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
-// ProcessSet sets the variables and handles them
+// ========================================
+// Variable Processing
+// ========================================
+
+// ProcessSet processes a CDSL SET instruction.
+//
+// The assigned value may be a numeric value, a variable reference, or an
+// arithmetic expression enclosed in #[...] syntax.
 func ProcessSet(instruction core.Instruction) {
 	if len(instruction) != 3 {
 		core.Error(
@@ -67,7 +74,6 @@ func ProcessSet(instruction core.Instruction) {
 		variableValue = result
 	}
 
-	// Store variable
 	core.SetVariable(variableKey, variableValue)
 
 	fmt.Printf("variable %s set to %v\n", variableKey, variableValue)
