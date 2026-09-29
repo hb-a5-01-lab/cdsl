@@ -8,6 +8,7 @@ import (
 	"github.com/znwng/cdsl/internal/core"
 )
 
+// ProcessReset gets the default values of all components and performs move function using those values
 func ProcessReset(config *core.Config, instruction core.Instruction) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {

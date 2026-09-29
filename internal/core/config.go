@@ -154,14 +154,14 @@ func ValueWithinLimits(config *Config, componentName string, value float32) (boo
 		return false, nil
 	}
 
-	min, minOK := component["min"].(int64)
-	max, maxOK := component["max"].(int64)
+	minValue, minOK := component["min"].(int64)
+	maxValue, maxOK := component["max"].(int64)
 
 	if !minOK || !maxOK {
 		return false, nil
 	}
 
-	return value >= float32(min) && value <= float32(max), nil
+	return value >= float32(minValue) && value <= float32(maxValue), nil
 }
 
 // ComponentDefault returns the default value of the component.
