@@ -83,10 +83,7 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 	}
 
 	if !componentExists {
-		core.Error(
-			"Undefined component: "+componentLabel,
-			instruction,
-		)
+		core.Error("Undefined component: "+componentLabel, instruction)
 		return
 	}
 

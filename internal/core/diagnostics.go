@@ -29,5 +29,5 @@ func DisplayInstruction(instruction Instruction) {
 // The instruction that caused the error is included in the message to provide
 // context for the failure.
 func Error(message string, instruction Instruction) {
-	fmt.Fprintf(os.Stderr, "%s%s: %s%s\n", ui.Red, instruction, message, ui.Reset)
+	fmt.Fprintf(os.Stderr, "%s%s: %s%s\n\n", ui.Red, instruction, message, ui.Reset)
 }

@@ -24,9 +24,9 @@ type Config map[string]any
 
 // xmlConfig represents the structure of the CDSL XML configuration file.
 type xmlConfig struct {
-	XMLName   xml.Name     `xml:"config"`
-	Arduino   xmlArduino   `xml:"arduino"`
-	Component xmlComponent `xml:"component"`
+	XMLName   xml.Name      `xml:"config"`
+	Arduino   xmlArduino    `xml:"arduino"`
+	Component xmlComponents `xml:"component"`
 }
 
 // xmlArduino contains the Arduino serial connection settings.
@@ -35,19 +35,22 @@ type xmlArduino struct {
 	BaudRate int    `xml:"baud_rate"`
 }
 
-// xmlComponent contains the configuration for all supported robot components.
-type xmlComponent struct {
-	Base     xmlComponentConfig `xml:"base"`
-	Shoulder xmlComponentConfig `xml:"shoulder"`
-	Elbow    xmlComponentConfig `xml:"elbow"`
-	Wrist    xmlComponentConfig `xml:"wrist"`
-	Hand     xmlComponentConfig `xml:"hand"`
-	Claw     xmlComponentConfig `xml:"claw"`
+// xmlComponents represents the collection of robot components.
+//
+// Components are intentionally stored dynamically rather than as named
+// struct fields. This allows new components to be added to the XML
+// configuration without requiring changes to the Go source code.
+type xmlComponents struct {
+	Elements []xmlComponent `xml:",any"`
 }
 
-// xmlComponentConfig contains the hardware configuration for a single
-// robot component.
-type xmlComponentConfig struct {
+// xmlComponent represents a single robot component.
+//
+// The component name is obtained from the XML element itself, while its
+// configuration is parsed from the element's child elements.
+type xmlComponent struct {
+	XMLName xml.Name `xml:""`
+
 	ID      uint8 `xml:"id"`
 	Min     int   `xml:"min"`
 	Max     int   `xml:"max"`
@@ -93,44 +96,20 @@ func LoadConfig() (*Config, error) {
 			"port":      xmlConfig.Arduino.Port,
 			"baud_rate": int64(xmlConfig.Arduino.BaudRate),
 		},
-		"component": map[string]any{
-			"base": map[string]any{
-				"id":      int64(xmlConfig.Component.Base.ID),
-				"min":     int64(xmlConfig.Component.Base.Min),
-				"max":     int64(xmlConfig.Component.Base.Max),
-				"default": int64(xmlConfig.Component.Base.Default),
-			},
-			"shoulder": map[string]any{
-				"id":      int64(xmlConfig.Component.Shoulder.ID),
-				"min":     int64(xmlConfig.Component.Shoulder.Min),
-				"max":     int64(xmlConfig.Component.Shoulder.Max),
-				"default": int64(xmlConfig.Component.Shoulder.Default),
-			},
-			"elbow": map[string]any{
-				"id":      int64(xmlConfig.Component.Elbow.ID),
-				"min":     int64(xmlConfig.Component.Elbow.Min),
-				"max":     int64(xmlConfig.Component.Elbow.Max),
-				"default": int64(xmlConfig.Component.Elbow.Default),
-			},
-			"wrist": map[string]any{
-				"id":      int64(xmlConfig.Component.Wrist.ID),
-				"min":     int64(xmlConfig.Component.Wrist.Min),
-				"max":     int64(xmlConfig.Component.Wrist.Max),
-				"default": int64(xmlConfig.Component.Wrist.Default),
-			},
-			"hand": map[string]any{
-				"id":      int64(xmlConfig.Component.Hand.ID),
-				"min":     int64(xmlConfig.Component.Hand.Min),
-				"max":     int64(xmlConfig.Component.Hand.Max),
-				"default": int64(xmlConfig.Component.Hand.Default),
-			},
-			"claw": map[string]any{
-				"id":      int64(xmlConfig.Component.Claw.ID),
-				"min":     int64(xmlConfig.Component.Claw.Min),
-				"max":     int64(xmlConfig.Component.Claw.Max),
-				"default": int64(xmlConfig.Component.Claw.Default),
-			},
-		},
+		"component": make(map[string]any),
+	}
+
+	components := config["component"].(map[string]any)
+
+	for _, component := range xmlConfig.Component.Elements {
+		name := component.XMLName.Local
+
+		components[name] = map[string]any{
+			"id":      int64(component.ID),
+			"min":     int64(component.Min),
+			"max":     int64(component.Max),
+			"default": int64(component.Default),
+		}
 	}
 
 	return &config, nil

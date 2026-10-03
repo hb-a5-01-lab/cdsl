@@ -75,8 +75,6 @@ func processInstruction(config *core.Config, instruction core.Instruction) {
 	default:
 		core.Error("Invalid action: "+instruction[0], instruction)
 	}
-
-	fmt.Println()
 }
 
 // ========================================
