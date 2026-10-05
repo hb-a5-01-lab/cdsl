@@ -1,4 +1,4 @@
-.PHONY: all clean rebuild check config install uninstall test
+.PHONY: all clean rebuild check config install uninstall test format
 
 INSTALL_DIR := $(HOME)/.local/bin
 CONFIG_DIR := $(HOME)/.config/cdsl
@@ -34,6 +34,10 @@ config:
 	else \
 		echo "$(CONFIG_FILE) already exists; leaving it unchanged."; \
 	fi
+
+format:
+	@echo "Formatting Go files..."
+	@gofmt -w $$(find . -type f -name '*.go' -not -path './.git/*')
 
 clean:
 	@echo "Cleaning build files..."
