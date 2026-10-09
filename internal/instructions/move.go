@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/znwng/cdsl/internal/core"
-	"github.com/znwng/cdsl/internal/hardware"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
+	"github.com/kalexion/cdsl/internal/hardware"
 )
 
 // ========================================
@@ -19,7 +20,7 @@ import (
 // before the command is sent to the Arduino.
 func ExecuteMove(
 	config *core.Config,
-	instruction core.Instruction,
+	instruction customTypes.Instruction,
 	componentLabel string,
 	valueText string,
 	value float32,
@@ -27,12 +28,12 @@ func ExecuteMove(
 	withinLimits, err := core.ValueWithinLimits(config, componentLabel, value)
 
 	if err != nil {
-		core.Error(err.Error(), instruction)
+		core.DiagnosticsError(err.Error(), instruction)
 		return false
 	}
 
 	if !withinLimits {
-		core.Error(
+		core.DiagnosticsError(
 			fmt.Sprintf(
 				"Value out of range for %s: %f",
 				componentLabel,
@@ -43,16 +44,18 @@ func ExecuteMove(
 		return false
 	}
 
-	err = hardware.SendCommand(config, componentLabel, value)
-
-	if err != nil {
-		core.Error(err.Error(), instruction)
+	if err := hardware.SendCommand(config, componentLabel, value); err != nil {
+		core.DiagnosticsError(err.Error(), instruction)
 		return false
 	}
 
-	fmt.Printf("Moved %s by %s\n\n", componentLabel, valueText)
+	core.DiagnosticsSuccess(
+		fmt.Sprintf("Moved %s by %s", componentLabel, valueText),
+		instruction,
+	)
 
 	return true
+
 }
 
 // ========================================
@@ -63,9 +66,9 @@ func ExecuteMove(
 //
 // The movement value may be a numeric value, a variable reference, or an
 // arithmetic expression enclosed in #[...] syntax.
-func ProcessMove(config *core.Config, instruction core.Instruction) {
+func ProcessMove(config *core.Config, instruction customTypes.Instruction) {
 	if len(instruction) != 3 {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid number of arguments. "+
 				"Example: `MOVE COMPONENT_NAME VALUE`",
 			instruction,
@@ -78,12 +81,12 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 	componentExists, err := core.ComponentExists(config, componentLabel)
 
 	if err != nil {
-		core.Error(err.Error(), instruction)
+		core.DiagnosticsError(err.Error(), instruction)
 		return
 	}
 
 	if !componentExists {
-		core.Error("Undefined component: "+componentLabel, instruction)
+		core.DiagnosticsError("Undefined component: "+componentLabel, instruction)
 		return
 	}
 
@@ -91,16 +94,15 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 
 	if strings.HasPrefix(value, "#[") {
 		if len(value) < 3 || !strings.HasSuffix(value, "]") {
-			core.Error("Invalid expression", instruction)
+			core.DiagnosticsError("Invalid expression", instruction)
 			return
 		}
 
 		expression := value[2 : len(value)-1]
 
 		result, err := core.EvaluateExpression(expression)
-
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
@@ -111,7 +113,6 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 			value,
 			result,
 		)
-
 		return
 	}
 
@@ -119,10 +120,7 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 		variableName := value[1:]
 
 		if !core.HasVariable(variableName) {
-			core.Error(
-				"Unknown variable: "+variableName,
-				instruction,
-			)
+			core.DiagnosticsError("Unknown variable: "+variableName, instruction)
 			return
 		}
 
@@ -135,14 +133,12 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 			value,
 			result,
 		)
-
 		return
 	}
 
 	result, err := core.IsValidFloatValue(value)
-
 	if err != nil {
-		core.Error(err.Error(), instruction)
+		core.DiagnosticsError(err.Error(), instruction)
 		return
 	}
 
@@ -153,4 +149,5 @@ func ProcessMove(config *core.Config, instruction core.Instruction) {
 		value,
 		result,
 	)
+
 }

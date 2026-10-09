@@ -5,7 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
 )
 
 // ========================================
@@ -17,8 +18,6 @@ import (
 // The delay is currently handled by the host system and may be moved to the
 // hardware layer in the future.
 func waitFunction(delay int) {
-	fmt.Printf("Waiting for %d milliseconds\n\n", delay)
-
 	time.Sleep(time.Duration(delay) * time.Millisecond)
 }
 
@@ -30,9 +29,9 @@ func waitFunction(delay int) {
 //
 // The duration may be an integer value, a variable reference, or an arithmetic
 // expression enclosed in #[...] syntax. Negative durations are rejected.
-func ProcessWait(instruction core.Instruction) {
+func ProcessWait(instruction customTypes.Instruction) {
 	if len(instruction) != 2 {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid number of arguments. Example: `WAIT DURATION_MS`",
 			instruction,
 		)
@@ -46,7 +45,7 @@ func ProcessWait(instruction core.Instruction) {
 	switch {
 	case strings.HasPrefix(value, "#["):
 		if len(value) < 3 || !strings.HasSuffix(value, "]") {
-			core.Error("Invalid expression", instruction)
+			core.DiagnosticsError("Invalid expression", instruction)
 			return
 		}
 
@@ -54,7 +53,7 @@ func ProcessWait(instruction core.Instruction) {
 
 		result, err := core.EvaluateExpression(expression)
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
@@ -64,7 +63,7 @@ func ProcessWait(instruction core.Instruction) {
 		variableName := value[1:]
 
 		if !core.HasVariable(variableName) {
-			core.Error("Unknown variable: "+variableName, instruction)
+			core.DiagnosticsError("Unknown variable: "+variableName, instruction)
 			return
 		}
 
@@ -73,7 +72,7 @@ func ProcessWait(instruction core.Instruction) {
 	default:
 		result, err := core.IsValidIntValue(value)
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
@@ -81,12 +80,17 @@ func ProcessWait(instruction core.Instruction) {
 	}
 
 	if delay < 0 {
-		core.Error(
+		core.DiagnosticsError(
 			fmt.Sprintf("Delay cannot be negative: %d", delay),
 			instruction,
 		)
 		return
 	}
+
+	core.DiagnosticsSuccess(
+		fmt.Sprintf("Waiting for %d milliseconds", delay),
+		instruction,
+	)
 
 	waitFunction(delay)
 }

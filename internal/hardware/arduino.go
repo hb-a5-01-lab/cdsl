@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
 	"golang.org/x/sys/unix"
 )
 

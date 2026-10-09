@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
 )
 
 // ========================================
@@ -15,20 +16,19 @@ import (
 //
 // The argument may be a variable reference or an arithmetic expression
 // enclosed in #[...] syntax.
-func ProcessPrint(instruction core.Instruction) {
+func ProcessPrint(instruction customTypes.Instruction) {
 	if len(instruction) != 2 {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid number of arguments. Example: `PRINT VALUE`",
 			instruction,
 		)
 		return
 	}
-
 	argument := instruction[1]
 
 	if strings.HasPrefix(argument, "#[") {
 		if len(argument) < 3 || !strings.HasSuffix(argument, "]") {
-			core.Error("Invalid expression", instruction)
+			core.DiagnosticsError("Invalid expression", instruction)
 			return
 		}
 
@@ -36,23 +36,25 @@ func ProcessPrint(instruction core.Instruction) {
 
 		result, err := core.EvaluateExpression(expression)
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
-		fmt.Println(result)
+		message := fmt.Sprintf("%v", result)
+		core.DiagnosticsSuccess(message, instruction)
 		return
 	}
 
 	variableKey := strings.TrimPrefix(argument, "$")
 
 	if !core.HasVariable(variableKey) {
-		core.Error(
+		core.DiagnosticsError(
 			"No variable with name "+variableKey,
 			instruction,
 		)
 		return
 	}
 
-	fmt.Println(core.GetVariable(variableKey))
+	message := fmt.Sprintf("%v", core.GetVariable(variableKey))
+	core.DiagnosticsSuccess(message, instruction)
 }

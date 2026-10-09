@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/znwng/cdsl/internal/runtime"
+	"github.com/kalexion/cdsl/internal/runtime"
 )
 
 func main() {

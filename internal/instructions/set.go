@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
 )
 
 // ========================================
@@ -15,9 +16,9 @@ import (
 //
 // The assigned value may be a numeric value, a variable reference, or an
 // arithmetic expression enclosed in #[...] syntax.
-func ProcessSet(instruction core.Instruction) {
+func ProcessSet(instruction customTypes.Instruction) {
 	if len(instruction) != 3 {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid number of arguments. Example: `SET VARIABLE VALUE`",
 			instruction,
 		)
@@ -25,7 +26,7 @@ func ProcessSet(instruction core.Instruction) {
 	}
 
 	if !core.IsValidVariableName(instruction[1]) {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid variable name: "+instruction[1],
 			instruction,
 		)
@@ -40,7 +41,7 @@ func ProcessSet(instruction core.Instruction) {
 	switch {
 	case strings.HasPrefix(value, "#["):
 		if len(value) < 3 || !strings.HasSuffix(value, "]") {
-			core.Error("Invalid expression", instruction)
+			core.DiagnosticsError("Invalid expression", instruction)
 			return
 		}
 
@@ -48,7 +49,7 @@ func ProcessSet(instruction core.Instruction) {
 
 		result, err := core.EvaluateExpression(expression)
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
@@ -58,7 +59,7 @@ func ProcessSet(instruction core.Instruction) {
 		variableName := value[1:]
 
 		if !core.HasVariable(variableName) {
-			core.Error("Unknown variable: "+variableName, instruction)
+			core.DiagnosticsError("Unknown variable: "+variableName, instruction)
 			return
 		}
 
@@ -67,7 +68,7 @@ func ProcessSet(instruction core.Instruction) {
 	default:
 		result, err := core.IsValidFloatValue(value)
 		if err != nil {
-			core.Error(err.Error(), instruction)
+			core.DiagnosticsError(err.Error(), instruction)
 			return
 		}
 
@@ -75,6 +76,5 @@ func ProcessSet(instruction core.Instruction) {
 	}
 
 	core.SetVariable(variableKey, variableValue)
-
-	fmt.Printf("variable %s set to %v\n", variableKey, variableValue)
+	core.DiagnosticsSuccess(fmt.Sprintf("Variable %s set to %v", variableKey, variableValue), instruction)
 }

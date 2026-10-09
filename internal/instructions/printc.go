@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
 )
 
 // ========================================
@@ -130,4 +130,6 @@ func ProcessPrintc(config *core.Config) {
 			component.defaultValue,
 		)
 	}
+
+	fmt.Println()
 }

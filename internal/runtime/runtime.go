@@ -8,9 +8,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/znwng/cdsl/internal/core"
-	"github.com/znwng/cdsl/internal/instructions"
-	"github.com/znwng/cdsl/internal/ui"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
+	"github.com/kalexion/cdsl/internal/instructions"
+	"github.com/kalexion/cdsl/internal/logging"
+	"github.com/kalexion/cdsl/internal/ui"
 
 	"github.com/chzyer/readline"
 )
@@ -40,14 +42,14 @@ var opcodeMap = map[string]opcode{
 	"reset":  reset,
 }
 
-func processInstruction(config *core.Config, instruction core.Instruction) {
+func processInstruction(config *core.Config, instruction customTypes.Instruction) {
 	if len(instruction) == 0 {
 		return
 	}
 
 	action, ok := opcodeMap[strings.ToLower(instruction[0])]
 	if !ok {
-		core.Error(
+		core.DiagnosticsError(
 			"Invalid action: "+instruction[0],
 			instruction,
 		)
@@ -74,7 +76,7 @@ func processInstruction(config *core.Config, instruction core.Instruction) {
 		instructions.ProcessReset(config, instruction)
 
 	default:
-		core.Error("Invalid action: "+instruction[0], instruction)
+		core.DiagnosticsError("Invalid action: "+instruction[0], instruction)
 	}
 }
 
@@ -101,13 +103,18 @@ func RunInteractiveMode() {
 
 	historyFile := filepath.Join(home, ".cdsl_history")
 
-	fmt.Printf("%sCDSL Interactive Mode%s\n", ui.Green, ui.Reset)
+	if err := logging.Init(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return
+	}
+
+	fmt.Printf("%sCDSL Interactive Mode%s\n", ui.Yellow, ui.Reset)
 	fmt.Println("Type `exit` to quit.")
 	fmt.Println("Type `clear` to clear screen.")
 	fmt.Println()
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          ui.Green + "cdsl> " + ui.Reset,
+		Prompt:          ui.Yellow + "cdsl> " + ui.Reset,
 		HistoryFile:     historyFile,
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",

@@ -5,7 +5,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/znwng/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/core"
+	"github.com/kalexion/cdsl/internal/customTypes"
 )
 
 // ========================================
@@ -17,9 +18,10 @@ import (
 // Components are processed in ascending order of their configured IDs. A
 // two-second delay is inserted between each movement to allow the hardware
 // to settle before the next command is sent.
-func ProcessReset(config *core.Config, instruction core.Instruction) {
+func ProcessReset(config *core.Config, instruction customTypes.Instruction) {
 	components, ok := (*config)["component"].(map[string]any)
 	if !ok {
+		core.DiagnosticsError("No valid component configuration found", instruction)
 		return
 	}
 
@@ -51,19 +53,18 @@ func ProcessReset(config *core.Config, instruction core.Instruction) {
 		})
 	}
 
+	if len(componentList) == 0 {
+		core.DiagnosticsError("No valid components available to reset", instruction)
+		return
+	}
+
 	sort.Slice(componentList, func(i, j int) bool {
 		return componentList[i].id < componentList[j].id
 	})
 
-	for _, component := range componentList {
+	for i, component := range componentList {
 		value := float32(component.defaultValue)
 		valueText := fmt.Sprintf("%d", component.defaultValue)
-
-		fmt.Printf(
-			"%s = %d\n",
-			component.name,
-			component.defaultValue,
-		)
 
 		if !ExecuteMove(
 			config,
@@ -75,6 +76,10 @@ func ProcessReset(config *core.Config, instruction core.Instruction) {
 			return
 		}
 
-		time.Sleep(2 * time.Second)
+		if i < len(componentList)-1 {
+			time.Sleep(2 * time.Second)
+		}
 	}
+
+	core.DiagnosticsSuccess("All components reset to their default positions", instruction)
 }

@@ -1,4 +1,4 @@
-module github.com/znwng/cdsl
+module github.com/kalexion/cdsl
 
 go 1.27.0
 
